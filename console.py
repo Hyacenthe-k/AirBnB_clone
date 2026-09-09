@@ -40,7 +40,7 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, arg):
-        """Creates a new instance of BaseModel, saves it, and prints the id."""
+        """Creates a new instance of BaseModel, saves it, and prints id."""
         args = shlex.split(arg)
         if len(args) == 0:
             print("** class name missing **")
@@ -52,7 +52,7 @@ class HBNBCommand(cmd.Cmd):
             print(new_instance.id)
 
     def do_show(self, arg):
-        """Prints string representation of an instance based on class name and id."""
+        """Prints string representation of instance based on class and id."""
         args = shlex.split(arg)
         objdict = storage.all()
         if len(args) == 0:
@@ -83,7 +83,7 @@ class HBNBCommand(cmd.Cmd):
             storage.save()
 
     def do_all(self, arg):
-        """Prints string representation of all instances based or not on class name."""
+        """Prints all string representations of all instances."""
         args = shlex.split(arg)
         if len(args) > 0 and args[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
@@ -97,7 +97,7 @@ class HBNBCommand(cmd.Cmd):
             print(objlist)
 
     def do_update(self, arg):
-        """Updates an instance based on class name and id by adding/updating attribute."""
+        """Updates an instance based on class name and id with attribute."""
         args = shlex.split(arg)
         objdict = storage.all()
         if len(args) == 0:
