@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-"""Defines the User class."""
+"""User class."""
+
 from models.base_model import BaseModel
 
 
 class User(BaseModel):
-    """Represents a User."""
+    """Represents a user."""
 
     email = ""
     password = ""
