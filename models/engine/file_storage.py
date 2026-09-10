@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Defines the FileStorage class."""
+"""Module for FileStorage class."""
 import json
 from models.base_model import BaseModel
 from models.user import User
@@ -11,29 +11,29 @@ from models.review import Review
 
 
 class FileStorage:
-    """Serializes instances to a JSON file and deserializes back."""
+    """Serializes instances to a JSON file and deserializes back to instances."""
 
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        """Return the dictionary __objects."""
+        """Returns the dictionary __objects."""
         return FileStorage.__objects
 
     def new(self, obj):
-        """Set in __objects the obj with key <class name>.id."""
-        key = "{}.{}".format(type(obj).__name__, obj.id)
-        FileStorage.__objects[key] = obj
+        """Sets in __objects the obj with key <obj class name>.id."""
+        if obj:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            FileStorage.__objects[key] = obj
 
     def save(self):
-        """Serialize __objects to the JSON file."""
-        obj_dict = {key: obj.to_dict()
-                    for key, obj in FileStorage.__objects.items()}
-        with open(FileStorage.__file_path, "w") as f:
+        """Serializes __objects to the JSON file (path: __file_path)."""
+        obj_dict = {key: obj.to_dict() for key, obj in FileStorage.__objects.items()}
+        with open(FileStorage.__file_path, 'w') as f:
             json.dump(obj_dict, f)
 
     def reload(self):
-        """Deserialize the JSON file to __objects, if it exists."""
+        """Deserializes the JSON file to __objects if file exists."""
         classes = {
             "BaseModel": BaseModel,
             "User": User,
@@ -44,10 +44,11 @@ class FileStorage:
             "Review": Review
         }
         try:
-            with open(FileStorage.__file_path, "r") as f:
+            with open(FileStorage.__file_path, 'r') as f:
                 obj_dict = json.load(f)
-            for key, value in obj_dict.items():
-                cls_name = value["__class__"]
-                FileStorage.__objects[key] = classes[cls_name](**value)
-        except FileNotFoundError:
+                for key, val in obj_dict.items():
+                    cls_name = val.get("__class__")
+                    if cls_name in classes:
+                        FileStorage.__objects[key] = classes[cls_name](**val)
+        except (FileNotFoundError, IOError):
             pass
