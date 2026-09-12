@@ -1,36 +1,44 @@
 #!/usr/bin/python3
-"""Defines the FileStorage class."""
+"""FileStorage class module."""
 import json
+from models.base_model import BaseModel
+from models.user import User
+
 
 class FileStorage:
-    """Serializes instances to a JSON file and deserializes JSON file to instances."""
+    """Serializes instances to JSON and deserializes to instances."""
+
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        """Return the dictionary __objects."""
-        return self.__objects
+        """Returns the dictionary __objects."""
+        return FileStorage.__objects
 
     def new(self, obj):
-        """Set in __objects obj with key <obj_class_name>.id"""
-        key = f"{obj.__class__.__name__}.{obj.id}"
-        self.__objects[key] = obj
+        """Sets in __objects the obj with key <obj class name>.id."""
+        if obj:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            FileStorage.__objects[key] = obj
 
     def save(self):
-        """Serialize __objects to the JSON file __file_path."""
-        with open(self.__file_path, "w", encoding="utf-8") as f:
-            d = {k: v.to_dict() for k, v in self.__objects.items()}
-            json.dump(d, f)
+        """Serializes __objects to JSON file."""
+        obj_dict = {k: v.to_dict() for k, v in FileStorage.__objects.items()}
+        with open(FileStorage.__file_path, 'w') as f:
+            json.dump(obj_dict, f)
 
     def reload(self):
-        """Deserialize the JSON file __file_path to __objects, if it exists."""
-        from models.base_model import BaseModel
+        """Deserializes JSON file to __objects."""
+        classes = {
+            "BaseModel": BaseModel,
+            "User": User
+        }
         try:
-            with open(self.__file_path, "r", encoding="utf-8") as f:
+            with open(FileStorage.__file_path, 'r') as f:
                 obj_dict = json.load(f)
-                for o in obj_dict.values():
-                    cls_name = o["__class__"]
-                    if cls_name == "BaseModel":
-                        self.new(BaseModel(**o))
-        except FileNotFoundError:
+                for k, v in obj_dict.items():
+                    cls_name = v.get("__class__")
+                    if cls_name in classes:
+                        FileStorage.__objects[k] = classes[cls_name](**v)
+        except (FileNotFoundError, IOError):
             pass
