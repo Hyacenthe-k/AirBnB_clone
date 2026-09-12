@@ -1,47 +1,36 @@
 #!/usr/bin/python3
 """Defines the FileStorage class."""
 import json
-from models.base_model import BaseModel
-from models.user import User
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.place import Place
-from models.review import Review
-
 
 class FileStorage:
-    """Serializes instances to JSON file and deserializes
-    JSON file to instances.
-    """
-
+    """Serializes instances to a JSON file and deserializes JSON file to instances."""
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
         """Return the dictionary __objects."""
-        return FileStorage.__objects
+        return self.__objects
 
     def new(self, obj):
-        """Set in __objects the obj with key <obj class name>.id."""
-        ocname = obj.__class__.__name__
-        FileStorage.__objects["{}.{}".format(ocname, obj.id)] = obj
+        """Set in __objects obj with key <obj_class_name>.id"""
+        key = f"{obj.__class__.__name__}.{obj.id}"
+        self.__objects[key] = obj
 
     def save(self):
         """Serialize __objects to the JSON file __file_path."""
-        odict = FileStorage.__objects
-        objdict = {obj: odict[obj].to_dict() for obj in odict.keys()}
-        with open(FileStorage.__file_path, "w") as f:
-            json.dump(objdict, f)
+        with open(self.__file_path, "w", encoding="utf-8") as f:
+            d = {k: v.to_dict() for k, v in self.__objects.items()}
+            json.dump(d, f)
 
     def reload(self):
-        """Deserialize the JSON file __file_path to __objects if it exists."""
+        """Deserialize the JSON file __file_path to __objects, if it exists."""
+        from models.base_model import BaseModel
         try:
-            with open(FileStorage.__file_path) as f:
-                objdict = json.load(f)
-                for o in objdict.values():
+            with open(self.__file_path, "r", encoding="utf-8") as f:
+                obj_dict = json.load(f)
+                for o in obj_dict.values():
                     cls_name = o["__class__"]
-                    del o["__class__"]
-                    self.new(eval(cls_name)(**o))
+                    if cls_name == "BaseModel":
+                        self.new(BaseModel(**o))
         except FileNotFoundError:
-            return
+            pass
